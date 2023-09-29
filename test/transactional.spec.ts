@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { describe, it } from "node:test";
+import { describe, it, mock } from "node:test";
 import { Propagation, TRANSACTIONAL_CONTEXT, transactional } from "../src";
 
 describe("transactional", () => {
@@ -59,5 +59,24 @@ describe("transactional", () => {
 
     // then
     assert.equal(inner, outer);
+  });
+
+  it("should run $rollback on errors", async () => {
+    // given
+    const $rollback = mock.fn(async () => {});
+    const method = transactional(async () => {
+      const store = TRANSACTIONAL_CONTEXT.getStore();
+      store!.$rollback = $rollback;
+
+      throw new Error();
+    }, Propagation.REQUIRED);
+
+    // when
+    try {
+      await method();
+    } catch (error) {}
+
+    // then
+    assert.equal($rollback.mock.callCount(), 1);
   });
 });

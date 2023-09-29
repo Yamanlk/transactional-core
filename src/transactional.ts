@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from "async_hooks";
 
 export interface TransactionalContext {
   $commit?: () => Promise<void>;
+  $rollback?: () => Promise<void>;
   [key: string]: any;
 }
 
@@ -70,12 +71,20 @@ export const transactional = <T extends (...args: any) => Promise<any>>(
     }
 
     async function run(this: any) {
-      const result = await method.call(this, ...args);
-      const store = TRANSACTIONAL_CONTEXT.getStore();
-      if (store?.$commit) {
-        await store.$commit();
+      try {
+        const result = await method.call(this, ...args);
+        const store = TRANSACTIONAL_CONTEXT.getStore();
+        if (store?.$commit) {
+          await store.$commit();
+        }
+        return result;
+      } catch (error) {
+        const store = TRANSACTIONAL_CONTEXT.getStore();
+        if (store?.$rollback) {
+          await store.$rollback();
+        }
+        throw error;
       }
-      return result;
     }
   } as T;
 };
