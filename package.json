@@ -1,7 +1,6 @@
 {
   "name": "@transactional/core",
   "version": "0.0.0-development",
-  "private": false,
   "description": "\"@transactional/core\" is an npm package that offers the core implementation of \"@Transactional\" method decorator for running your queries inside a transaction seamlessly. It achieves this by leveraging AsyncLocalStorage.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,11 +15,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Yamanlk/transactional-core"
+    "url": "git+https://github.com/Yamanlk/transactional-core.git"
   },
   "bugs": {
-    "email": "yamanlakis@gmail.com",
-    "url": "https://github.com/Yamanlk/transactional-core/issues"
+    "url": "https://github.com/Yamanlk/transactional-core/issues",
+    "email": "yamanlakis@gmail.com"
   },
   "homepage": "https://github.com/Yamanlk/transactional-core",
   "files": [
