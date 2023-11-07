@@ -6,7 +6,8 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "node --require ts-node/register ./test/index.ts",
-    "build": "tsc",
+    "prebuild": "rimraf dist",
+    "build": "tsc -p tsconfig.build.json",
     "semantic-release": "semantic-release"
   },
   "keywords": [
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@types/node": "^20.7.1",
     "glob": "^10.3.10",
+    "rimraf": "^5.0.5",
     "semantic-release": "^22.0.5",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"

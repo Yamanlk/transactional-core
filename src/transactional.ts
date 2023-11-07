@@ -19,8 +19,12 @@ export enum Propagation {
 }
 export const Transactional =
   (propagation: Propagation = Propagation.REQUIRED) =>
-  (method: any, descriptor: any) =>
-    transactional(method, propagation);
+  (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+    const originalMethod = descriptor.value;
+    if (descriptor.value) {
+      descriptor.value = transactional(originalMethod, propagation);
+    }
+  };
 
 export const transactional = <T extends (...args: any) => Promise<any>>(
   method: T,
