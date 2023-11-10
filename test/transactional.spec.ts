@@ -79,4 +79,21 @@ describe("transactional", () => {
     // then
     assert.equal($rollback.mock.callCount(), 1);
   });
+
+  it("should pass options to async context", async () => {
+    // given
+    const method = transactional(
+      async () => {
+        return TRANSACTIONAL_CONTEXT.getStore();
+      },
+      Propagation.REQUIRED,
+      { value: true }
+    );
+
+    // when
+    let store = await method();
+
+    // then
+    assert.ok(store?.options.value);
+  });
 });

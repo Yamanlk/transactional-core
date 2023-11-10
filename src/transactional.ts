@@ -1,9 +1,10 @@
 import { AsyncLocalStorage } from "async_hooks";
 
-export interface TransactionalContext {
+export interface TransactionalContext<O = any> {
   $commit?: () => Promise<void>;
   $rollback?: () => Promise<void>;
   [key: string]: any;
+  options?: O;
 }
 
 export const TRANSACTIONAL_CONTEXT =
@@ -18,17 +19,21 @@ export enum Propagation {
   SUPPORTS,
 }
 export const Transactional =
-  (propagation: Propagation = Propagation.REQUIRED) =>
+  <O = any>(propagation: Propagation = Propagation.REQUIRED, options?: O) =>
   (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     if (descriptor.value) {
-      descriptor.value = transactional(originalMethod, propagation);
+      descriptor.value = transactional(originalMethod, propagation, options);
     }
   };
 
-export const transactional = <T extends (...args: any) => Promise<any>>(
+export const transactional = <
+  O extends any,
+  T extends (...args: any) => Promise<any> = any
+>(
   method: T,
-  propagation: Propagation = Propagation.REQUIRED
+  propagation: Propagation = Propagation.REQUIRED,
+  options?: O
 ): T => {
   return async function (this: any, ...args: any[]) {
     const store = TRANSACTIONAL_CONTEXT.getStore();
@@ -45,7 +50,7 @@ export const transactional = <T extends (...args: any) => Promise<any>>(
     }
 
     if (Propagation.REQUIRED === propagation && !store) {
-      return TRANSACTIONAL_CONTEXT.run({}, async () => run.call(this));
+      return TRANSACTIONAL_CONTEXT.run({ options }, async () => run.call(this));
     }
 
     if (Propagation.MANDATORY === propagation && !store) {
@@ -63,7 +68,7 @@ export const transactional = <T extends (...args: any) => Promise<any>>(
     }
 
     if (Propagation.REQUIRES_NEW === propagation) {
-      return TRANSACTIONAL_CONTEXT.run({}, () => run.call(this));
+      return TRANSACTIONAL_CONTEXT.run({ options }, () => run.call(this));
     }
 
     if (Propagation.NEVER === propagation && store) {
